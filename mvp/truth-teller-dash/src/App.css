@@ -1,0 +1,96 @@
+@import '../../shared-assets/master.css';
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem;
+}
+
+.header {
+    text-align: left;
+    margin-bottom: 4rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat .label {
+    font-size: 0.8rem;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.stat .value {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.signal-list h2 {
+    margin-bottom: 2rem;
+    color: var(--color-gold);
+}
+
+.signal-item {
+    display: grid;
+    grid-template-columns: 120px 1fr 120px 60px;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+}
+
+.signal-item .tag {
+    background: var(--color-maroon);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.signal-item .status {
+    opacity: 0.6;
+    font-size: 0.9rem;
+}
+
+.signal-item .score {
+    color: var(--color-gold);
+    font-weight: 700;
+    text-align: right;
+}
+
+.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.animate-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.footer {
+    margin-top: 4rem;
+    opacity: 0.5;
+}

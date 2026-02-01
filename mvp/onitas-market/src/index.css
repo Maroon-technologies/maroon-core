@@ -1,0 +1,61 @@
+/* Maroon Empire Design System (Maroon.md Standard) */
+
+:root {
+    /* Colors */
+    --color-maroon: #800000;
+    --color-maroon-light: #a52a2a;
+    --color-gold: #ffd700;
+    --color-slate-900: #0f172a;
+    --color-slate-800: #1e293b;
+    --color-slate-100: #f1f5f9;
+    --color-glass: rgba(30, 41, 59, 0.7);
+
+    /* Typography */
+    --font-main: 'Outfit', 'Inter', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background: radial-gradient(circle at top right, var(--color-slate-900), #000);
+    color: var(--color-slate-100);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+.glass-panel {
+    background: var(--color-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.title-sovereign {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-maroon-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+}
+
+.btn-primary {
+    background: var(--color-maroon);
+    color: #white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px 0 rgba(128, 0, 0, 0.39);
+}
+
+.btn-primary:hover {
+    background: var(--color-maroon-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(128, 0, 0, 0.23);
+}

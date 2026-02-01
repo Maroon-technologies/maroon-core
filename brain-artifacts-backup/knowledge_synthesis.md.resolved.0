@@ -1,0 +1,16 @@
+# Maroon-Core: Knowledge Synthesis Log
+
+This log tracks the "Learn and Rewrite" mission, documenting specific findings from the two-year corpus for user validation.
+
+## Phase 0: Thematic Mapping (COMPLETE)
+
+**Finding**: The corpus is structured around five core pillars:
+1. **NASA-Grade Governance** (NPD 7120.6A)
+2. **Food-Access Infrastructure** (Commissary/WIC)
+3. **Sovereign Capital** (GCP/AWS Credits)
+4. **IP Defensibility** (Patent Portfolios)
+5. **Operational Philosophy** (Vertical Philanthropy / Pathology)
+
+## Phase 1: The Creative Charter (PENDING)
+
+**Goal**: Extract the core "Orchestrator" logic from the `Creative Charter` and `System Pathology` notes.

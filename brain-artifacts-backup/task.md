@@ -1,0 +1,17 @@
+# Task: Maroon-Core Knowledge Synthesis and Organization
+
+- [ ] Initial Workspace Exploration and Assessment [/]
+  - [ ] List all files and directories in the workspace and identifying key knowledge sources [x]
+  - [ ] Sample large JSON files (`conversations.json`, `chat.html`) to extract "Maroon" essence [/]
+- [ ] Structure Definition and Implementation [ ]
+  - [ ] Design a hierarchical directory structure for Maroon-Core [ ]
+  - [ ] Create core directories (Ontology, Business, Specs, Legal, MVPs) [ ]
+- [ ] Knowledge Extraction and Rewriting [ ]
+  - [ ] Extract "Operations Ontology" and "Pathology" concepts [ ]
+  - [ ] Draft "Engineering Specs" for upcoming phases [ ]
+  - [ ] Document "Business Logic" and "Patent" summaries [ ]
+- [ ] GCP and Tooling Integration [ ]
+  - [ ] Plan utilization of $1300 GCP credits [ ]
+  - [ ] Document setup for Google Drive and Obsidian integration [ ]
+- [ ] Final Review and Walkthrough [ ]
+  - [ ] Create `walkthrough.md` summarizing the new organization [ ]
