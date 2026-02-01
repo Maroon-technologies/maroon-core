@@ -1,0 +1,17 @@
+{
+  "service_name": "maroon-research-agent",
+  "runtime": "python311",
+  "region": "us-central1",
+  "env_vars": {
+    "WORKSPACE_ROOT": "/Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c",
+    "GEMINI_MODEL": "gemini-1.5-pro",
+    "BIGQUERY_DATASET": "maroon_corpus",
+    "VERTEX_AI_PROJECT": "maroon-empire"
+  },
+  "required_apis": [
+    "aiplatform.googleapis.com",
+    "bigquery.googleapis.com",
+    "storage.googleapis.com"
+  ],
+  "estimated_cost": "$0.00 (using free tier + startup credits)"
+}

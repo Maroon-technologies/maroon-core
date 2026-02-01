@@ -1,27 +1,47 @@
-# Maroon-Core: Master Index
+# Maroon-Core
 
-Welcome to the central intelligence hub for the Maroon-Core system. This repository organizes the patterns, systems, businesses, and ontologies developed across previous phases into a cohesive, engineering-ready structure.
+Sovereign technology conglomerate building high-integrity AI systems for underserved communities.
 
-## System Architecture Overview
+## Core Products
 
-The Maroon-Core system is built on a hierarchical operational ontology designed for sovereign, enterprise-grade scalability.
+- **Truth Teller**: AI prediction engine with integrity scoring
+- **Onitas Market**: EBT Split transaction apparatus (Patent Pending)
+- **Maroon Corpus**: 270MB+ regulatory and market intelligence
 
-### Directory Structure
+## Structure
 
-- **[ontology/](file:///Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c/Maroon-Core/ontology/)**: Defines the "Pathology" of systems and the core operational language.
-- **[business/](file:///Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c/Maroon-Core/business/)**: Business logic, market analysis, and revenue models (e.g., Ghost Kitchens, Commissary Units).
-- **[specs/](file:///Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c/Maroon-Core/specs/)**: High-level engineering requirements and technical roadmaps.
-- **[legal/](file:///Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c/Maroon-Core/legal/)**: Patent drafts, governance frameworks, and regulatory compliance (WA State focus).
-- **[mvp/](file:///Users/user1/Desktop/d9d3a104ccffaaced25a1a39fd6973a33055cfa64e6c4c88930d8a63763868ba-2026-02-01-16-51-09-7764e05a513d4615be1125c3811d675c/Maroon-Core/mvp/)**: Active product development, starting with the `nanny` project.
+```
+Maroon-Core/
+├── schema.json          # Root-level schema.org markup
+├── index.html           # Live landing page
+├── MAROON.md           # Master documentation
+├── ontology/           # Operational ontology & corpus
+├── business/           # Financial & application docs
+├── specs/              # Engineering requirements
+├── mvp/                # Product deployments
+└── analysis_outputs/   # 227+ corpus documents
+```
 
-## Core Philosophical Tenets (The Creative Charter)
+## Tech Stack
 
-1. **Sovereignty**: Ownership of data, logic, and infrastructure.
-2. **Hierarchy**: Meaning is structured and defensible.
-3. **Adaptability**: Systems learn and evolve without breaking core principles.
+- **AI/ML**: Vertex AI, Gemini 1.5 Pro
+- **Data**: BigQuery, Cloud Spanner
+- **Compute**: GKE, Cloud Run, Firebase
+- **Integration**: GitHub Copilot, Google Workspace
 
-## Roadmap: The Next 60 Minutes
+## Status
 
-1. **Fill Ontological Gaps**: Document the "System Pathology" and "Signal Ingestion" logic.
-2. **Standardize Business Logic**: Consolidate the Washington State commissary research into actionable specs.
-3. **Plan GCP Deployment**: Allocate $1300 budget for BigQuery datasets and Vertex AI agentic workflows.
+🚀 **Live**: Accepting Google Cloud & AWS Startup Credits  
+📊 **Corpus**: 227 conversations analyzed  
+💰 **Budget**: $135 remaining of $150 operational  
+☁️ **Credits**: $750 GCP available, $100k-$350k pending
+
+## Quick Start
+
+1. Deploy website: `firebase deploy --only hosting`
+2. Run research agent: `python3 research_agent.py`
+3. View schema: Open `schema.json` or `index.html`
+
+## License
+
+© 2024-2026 Maroon Technologies. Part of the Maroon Trust.

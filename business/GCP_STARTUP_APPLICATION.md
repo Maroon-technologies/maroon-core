@@ -10,7 +10,7 @@
 
 ## The Problem
 
-Underserved communities lack sovereign infrastructure for essential services (Food, Law, Research). Currently, these data signals are fragmented and inaccessible, leading to systemic inefficiencies.
+Underserved communities lack sovereign infrastructure for essential services (Food, Law, Research). Currently, these corpus signals are fragmented and inaccessible, leading to systemic inefficiencies.
 
 ## The Solution
 

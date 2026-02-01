@@ -1,6 +1,6 @@
 # Maroon-Core: Truth Teller Database Schema
 
-This schema defines the "Signal Ingestion" and "Integrity Mapping" layer for the Maroon Trust. It connects all businesses (Food, Law, Tech) through a shared data ontology.
+This schema defines the "Signal Ingestion" and "Integrity Mapping" layer for the Maroon Trust. It connects all businesses (Food, Law, Tech) through a shared corpus ontology.
 
 ## 1. Core Tables
 
@@ -11,7 +11,7 @@ Stores raw ingestion from external APIs (Zillow, WSDA, SEC, etc.)
 - `id`: UUID (Primary Key)
 - `source`: String (e.g., "WSDA_REGS")
 - `entity_id`: String (Foreign Key to local entity)
-- `payload`: JSONB (Raw signal data)
+- `payload`: JSONB (Raw signal corpus)
 - `timestamp`: DateTime
 - `integrity_score`: Float (Calculated by Truth Teller)
 
@@ -44,4 +44,4 @@ Output from the Truth Teller engine.
 ## 3. Implementation (GCP BigQuery)
 
 - Datasets will be partitioned by `entity_type` and `source`.
-- CLEAN datasets will be mirrored for LLM-agentic querying via Vertex AI.
+- CLEAN corpus sets will be mirrored for LLM-agentic querying via Vertex AI.

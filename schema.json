@@ -1,0 +1,163 @@
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Organization",
+            "@id": "https://maroon-tech.com/#organization",
+            "name": "Maroon Technologies",
+            "legalName": "Maroon Technologies LLC",
+            "url": "https://maroon-tech.com",
+            "logo": "https://maroon-tech.com/assets/maroon-logo.png",
+            "description": "Sovereign technology conglomerate building high-integrity AI systems for underserved communities. Core innovations: Truth Teller prediction engine and EBT Split transaction apparatus.",
+            "foundingDate": "2024",
+            "foundingLocation": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressRegion": "WA",
+                    "addressCountry": "US"
+                }
+            },
+            "parentOrganization": {
+                "@type": "Organization",
+                "name": "Maroon Trust",
+                "description": "Sovereign legal structure governing all Maroon entities"
+            },
+            "subOrganization": [
+                {
+                    "@type": "Organization",
+                    "name": "Maroon Foods",
+                    "description": "Food sovereignty infrastructure for underserved communities"
+                },
+                {
+                    "@type": "Organization",
+                    "name": "Maroon Law",
+                    "description": "Volunteer law firm for community legal infrastructure"
+                },
+                {
+                    "@type": "Organization",
+                    "name": "Maroon Consulting",
+                    "description": "Enterprise transformation and sovereign governance"
+                }
+            ],
+            "knowsAbout": [
+                "Artificial Intelligence",
+                "Food Access",
+                "EBT/SNAP Systems",
+                "Regulatory Compliance",
+                "Patent Law",
+                "Commissary Infrastructure",
+                "Truth-Governed Intelligence"
+            ],
+            "areaServed": {
+                "@type": "Place",
+                "name": "Washington State",
+                "addressCountry": "US"
+            }
+        },
+        {
+            "@type": "SoftwareApplication",
+            "@id": "https://maroon-tech.com/#truthteller",
+            "name": "Truth Teller",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Cloud",
+            "description": "AI prediction engine with integrity scoring for regulatory and market signals",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "creator": {
+                "@id": "https://maroon-tech.com/#organization"
+            },
+            "featureList": [
+                "Integrity-based prediction",
+                "Regulatory signal analysis",
+                "Market pattern recognition",
+                "Truth verification scoring"
+            ]
+        },
+        {
+            "@type": "SoftwareApplication",
+            "@id": "https://maroon-tech.com/#onitasmarket",
+            "name": "Onitas Market",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web, iOS, Android",
+            "description": "Direct-to-consumer food platform with patented EBT Split transaction apparatus",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "creator": {
+                "@id": "https://maroon-tech.com/#organization"
+            },
+            "featureList": [
+                "EBT/WIC split-payment processing",
+                "Commissary kitchen integration",
+                "Real-time delivery tracking",
+                "Food desert accessibility"
+            ]
+        },
+        {
+            "@type": "Dataset",
+            "@id": "https://maroon-tech.com/#marooncorpus",
+            "name": "Maroon Corpus",
+            "description": "2-year regulatory and market corpus for AI-driven vertical philanthropy",
+            "creator": {
+                "@id": "https://maroon-tech.com/#organization"
+            },
+            "distribution": {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": "https://storage.googleapis.com/maroon-corpus"
+            },
+            "temporalCoverage": "2024/2026",
+            "spatialCoverage": {
+                "@type": "Place",
+                "name": "United States"
+            },
+            "keywords": [
+                "EBT regulations",
+                "WIC compliance",
+                "Food access",
+                "Patent landscape",
+                "Commissary infrastructure"
+            ],
+            "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+            "size": "270MB+"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https://maroon-tech.com/#website",
+            "url": "https://maroon-tech.com",
+            "name": "Maroon Technologies",
+            "description": "Building sovereign infrastructure for food, law, and technology",
+            "publisher": {
+                "@id": "https://maroon-tech.com/#organization"
+            },
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://maroon-tech.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        },
+        {
+            "@type": "ResearchProject",
+            "@id": "https://maroon-tech.com/#research",
+            "name": "Maroon Empire Research Initiative",
+            "description": "High-integrity R&D ecosystem for vertical philanthropy and essential infrastructure",
+            "sponsor": {
+                "@id": "https://maroon-tech.com/#organization"
+            },
+            "funding": {
+                "@type": "Grant",
+                "funder": {
+                    "@type": "Organization",
+                    "name": "Google for Startups"
+                },
+                "description": "Cloud credits for AI/ML research"
+            }
+        }
+    ]
+}
