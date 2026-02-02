@@ -32,11 +32,18 @@ jobs:
       - name: Run tests or quick sanity
         run: |
           if [ -d tests ] || ls test_*.py >/dev/null 2>&1; then
-            python -m pip install pytest || true
-            pytest --maxfail=1 --disable-warnings -q
+            python -m pip install pytest pytest-cov || true
+            pytest --maxfail=1 --disable-warnings -q --cov=./ --cov-report=xml || true
           else
             python -m compileall .
           fi
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   node:
     name: Node (mvp packages)
