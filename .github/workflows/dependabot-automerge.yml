@@ -1,0 +1,21 @@
+name: "Dependabot Auto-merge"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Auto-merge Dependabot PRs when checks pass
+        uses: pascalgn/automerge-action@v0.15.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          merge_method: squash
+          approve_if_required: true
+          required_status_checks: |
+            CI / Python checks
+            CI / Node (mvp packages)
+            Analyze (CodeQL)
