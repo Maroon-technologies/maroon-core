@@ -1,5 +1,11 @@
 # Maroon-Core
 
+[![CI / Python checks](https://github.com/Maroon-technologies/maroon-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Maroon-technologies/maroon-core/actions/workflows/ci.yml)
+[![Analyze (CodeQL)](https://github.com/Maroon-technologies/maroon-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Maroon-technologies/maroon-core/actions/workflows/codeql-analysis.yml)
+[![Dependabot Status](https://img.shields.io/badge/dependabot-updates-blue)](https://github.com/Maroon-technologies/maroon-core/network/updates)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Codecov](https://codecov.io/gh/Maroon-technologies/maroon-core/branch/main/graph/badge.svg)](https://codecov.io/gh/Maroon-technologies/maroon-core)
+
 Sovereign technology conglomerate building high-integrity AI systems for underserved communities.
 
 ## Core Products
