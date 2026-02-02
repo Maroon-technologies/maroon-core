@@ -45,6 +45,15 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+      - name: Upload to Codecov
+        if: always()
+        continue-on-error: true
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   node:
     name: Node (mvp packages)
     runs-on: ubuntu-latest
