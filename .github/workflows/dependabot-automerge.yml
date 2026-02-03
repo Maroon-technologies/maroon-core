@@ -10,7 +10,7 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     steps:
       - name: Auto-merge Dependabot PRs when checks pass
-        uses: pascalgn/automerge-action@v0.15.5
+        uses: pascalgn/automerge-action@v0.16.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           merge_method: squash
