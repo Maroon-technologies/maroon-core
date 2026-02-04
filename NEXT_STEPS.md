@@ -1,5 +1,27 @@
 # NEXT 15 CRITICAL STEPS - EXECUTION PLAN
 
+## Priority: Corpus Organization and Governance (Start Now)
+
+- Consolidate all `maroon*.md` into a single priority list and rewrite in order (system overview → rules → governance → architecture → execution).
+- Freeze duplicates: mark redundant files and move them to `archive/duplicates/` after review.
+- Establish a single “source of truth” folder tree and stop scattering new docs.
+- Create a patents index that distinguishes filed vs. draft vs. opportunity.
+- Align schemas and system specs to the Master Ontology before adding new features.
+
+Proposed structure:
+- `Maroon-Core/` (core source of truth)
+- `Maroon-Core/docs/` (governance, rules, system overview)
+- `Maroon-Core/patents/` (filed, draft, opportunities, valuation)
+- `Maroon-Core/schemas/` (data models + migrations)
+- `Maroon-Core/specs/` (engineering specs + runbooks)
+- `Maroon-Core/runs/` (cycle outputs only)
+- `archive/` (legacy, duplicates, external dumps)
+
+Cleanup quick wins:
+- Move large exports and raw dumps into `archive/` (keep originals).
+- Remove stale reports that conflict with current counts (keep in archive).
+- Keep only one active “portfolio” doc and one active “system overview” doc.
+
 ## Immediate Actions (Do These Now)
 
 ### Step 1-3: Deploy Live Website
