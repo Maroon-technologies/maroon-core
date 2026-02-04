@@ -25,7 +25,11 @@ set -euo pipefail
 # Then set MAROON_SYNC_REMOTE to your remote name.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CORE_ROOT="$SCRIPT_DIR/Maroon-Core"
+if command -v git >/dev/null 2>&1 && git -C "$SCRIPT_DIR" rev-parse --show-toplevel >/dev/null 2>&1; then
+  CORE_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+else
+  CORE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
 RUNS_DIR="${MAROON_RUNS_DIR:-$CORE_ROOT/runs}"
 SYNC_REMOTE="${MAROON_SYNC_REMOTE:-}"
 SYNC_SUBDIR="${MAROON_SYNC_SUBDIR:-Maroon/runs}"

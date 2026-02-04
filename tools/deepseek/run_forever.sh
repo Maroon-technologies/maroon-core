@@ -7,8 +7,9 @@ set -euo pipefail
 # - Optionally runs a post-run sync hook.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CORE_RUNNER="$SCRIPT_DIR/Maroon-Core/tools/deepseek/run_workspace.sh"
-SYNC_HOOK="$SCRIPT_DIR/Maroon-Core/tools/deepseek/post_run_sync.sh"
+
+CORE_RUNNER="$SCRIPT_DIR/run_workspace.sh"
+SYNC_HOOK="$SCRIPT_DIR/post_run_sync.sh"
 
 SLEEP_SECONDS="${MAROON_LOOP_SLEEP_SECONDS:-0}"
 LOG_FILE="${MAROON_LOOP_LOG:-$SCRIPT_DIR/deepseek_loop.log}"
@@ -70,6 +71,13 @@ main() {
   trap release_lock EXIT INT TERM
 
   while true; do
+    # Avoid overlapping runs if something is already executing.
+    if pgrep -f "deepseek_maroon_cleanup.sh" >/dev/null 2>&1; then
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] Existing run detected; waiting 60s" | tee -a "$LOG_FILE"
+      sleep 60
+      continue
+    fi
+
     run_once
     if [[ "$SLEEP_SECONDS" -gt 0 ]]; then
       echo "Sleeping for $SLEEP_SECONDS seconds" | tee -a "$LOG_FILE"
@@ -80,9 +88,9 @@ main() {
   done
 }
 
-if command -v caffeinate >/dev/null 2>&1; then
-  caffeinate -dimsu "$0" "$@" || true
-  exit 0
+if command -v caffeinate >/dev/null 2>&1 && [[ "${MAROON_CAFFEINATED:-0}" != "1" ]]; then
+  export MAROON_CAFFEINATED=1
+  exec caffeinate -dimsu "$0" "$@"
 fi
 
 main "$@"
