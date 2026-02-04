@@ -129,7 +129,8 @@ if [[ "$CYCLE_LEDGER" == "1" ]]; then
     SNAPSHOT="$RUN_DIR/cycle_snapshot.md"
     if [[ -f "$INDEX_JSON" ]]; then
       python3 - <<'PY'
-import json, os, sys, datetime
+import json, os, datetime, re
+
 run_dir = os.environ.get("RUN_DIR")
 index_json = os.environ.get("INDEX_JSON")
 ledger = os.environ.get("LEDGER")
@@ -139,9 +140,50 @@ run_ts = os.environ.get("RUN_TS")
 data = json.load(open(index_json, "r", encoding="utf-8"))
 counts = data.get("counts", {})
 pat = data.get("patent_docs", {})
+
+# Compute progress from run_manifest if present
+manifest_path = os.path.join(run_dir, "run_manifest.json")
+total_files = done_files = error_files = 0
+by_cat = {}
+
+def categorize(path: str) -> str:
+    s = path.lower()
+    if "maroon" in s: return "maroon"
+    if "patent" in s: return "patent"
+    if "schema" in s: return "schema"
+    if "system" in s: return "system"
+    if "business" in s: return "business"
+    if "truth" in s: return "truth"
+    if "ontology" in s: return "ontology"
+    if "spec" in s: return "spec"
+    if "nanny" in s: return "nanny"
+    return "other"
+
+if os.path.isfile(manifest_path):
+    manifest = json.load(open(manifest_path, "r", encoding="utf-8"))
+    files = manifest.get("files", [])
+    total_files = len(files)
+    for f in files:
+        status = f.get("status")
+        path = f.get("relpath") or f.get("path") or ""
+        cat = categorize(path)
+        by_cat.setdefault(cat, {"total": 0, "done": 0, "error": 0})
+        by_cat[cat]["total"] += 1
+        if status in ("ok", "skipped"):
+            done_files += 1
+            by_cat[cat]["done"] += 1
+        elif status == "error":
+            error_files += 1
+            by_cat[cat]["error"] += 1
+
+progress_pct = 0.0
+if total_files > 0:
+    progress_pct = round((done_files / total_files) * 100, 1)
+
 line = (
     f"- {datetime.datetime.now().isoformat(timespec='seconds')}"
     f" | run {run_ts}"
+    f" | progress {progress_pct}%"
     f" | maroon {counts.get('maroon')}"
     f" | patent_docs {pat.get('draft_files_count')}"
     f" | portfolio {pat.get('portfolio_opportunities')}"
@@ -157,15 +199,26 @@ with open(ledger, "a", encoding="utf-8") as f:
 with open(snapshot, "w", encoding="utf-8") as f:
     f.write("# Cycle Snapshot\n\n")
     f.write(line + "\n\n")
-    f.write("## Counts\n")
+    f.write("## Progress\n")
+    f.write(f"- total_files: {total_files}\n")
+    f.write(f"- done_files: {done_files}\n")
+    f.write(f"- error_files: {error_files}\n")
+    f.write(f"- progress_pct: {progress_pct}%\n")
+    if by_cat:
+        f.write("### Progress by Category\n")
+        for k in sorted(by_cat.keys()):
+            v = by_cat[k]
+            pct = round((v['done'] / v['total']) * 100, 1) if v['total'] else 0.0
+            f.write(f\"- {k}: {v['done']}/{v['total']} ({pct}%)\\n\")
+    f.write(\"\\n## Counts\\n\")
     for k in sorted(counts.keys()):
-        f.write(f"- {k}: {counts.get(k)}\n")
-    f.write("\n## Patents\n")
-    f.write(f"- draft_files_count: {pat.get('draft_files_count')}\n")
-    f.write(f"- portfolio_opportunities: {pat.get('portfolio_opportunities')}\n")
-    f.write(f"- extraction_report_opportunities: {pat.get('extraction_report_opportunities')}\n")
-    f.write(f"- email_claimed_innovations: {pat.get('email_claimed_innovations')}\n")
-    f.write(f"- filed_patents_user_reported: {pat.get('filed_patents_user_reported')}\n")
+        f.write(f\"- {k}: {counts.get(k)}\\n\")
+    f.write(\"\\n## Patents\\n\")
+    f.write(f\"- draft_files_count: {pat.get('draft_files_count')}\\n\")
+    f.write(f\"- portfolio_opportunities: {pat.get('portfolio_opportunities')}\\n\")
+    f.write(f\"- extraction_report_opportunities: {pat.get('extraction_report_opportunities')}\\n\")
+    f.write(f\"- email_claimed_innovations: {pat.get('email_claimed_innovations')}\\n\")
+    f.write(f\"- filed_patents_user_reported: {pat.get('filed_patents_user_reported')}\\n\")
 PY
     fi
   fi
