@@ -49,6 +49,12 @@ run_ts = open(latest_path, "r", encoding="utf-8").read().strip()
 out_dir = os.path.join(runs_dir, run_ts)
 os.makedirs(out_dir, exist_ok=True)
 
+filed_patents = os.environ.get("MAROON_FILED_PATENTS")
+try:
+    filed_patents = int(filed_patents) if filed_patents else None
+except Exception:
+    filed_patents = None
+
 categories = {
     "maroon": ["*maroon*.md"],
     "patent": ["*patent*.md"],
@@ -132,6 +138,7 @@ summary = {
         "portfolio_opportunities": portfolio_count,
         "extraction_report_opportunities": extraction_count,
         "email_claimed_innovations": email_claim,
+        "filed_patents_user_reported": filed_patents,
     },
 }
 

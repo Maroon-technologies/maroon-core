@@ -49,6 +49,9 @@ NO_AGGREGATE="${MAROON_NO_AGGREGATE:-0}"
 # then re-aggregate (the aggregator prefers pass2 outputs when present).
 SECOND_PASS="${MAROON_SECOND_PASS:-0}"
 
+# If set to 1, skip files that have not changed since the last run (redundancy guard).
+SKIP_UNCHANGED="${MAROON_SKIP_UNCHANGED:-1}"
+
 # If set to 1, copy small aggregated artifacts into ./runs/<timestamp>/ for git tracking.
 COPY_TO_RUNS="${MAROON_COPY_TO_RUNS:-1}"
 
@@ -113,6 +116,7 @@ chunk_chars = int(os.environ.get("MAROON_CHUNK_CHARS", "12000"))
 full_chars = int(os.environ.get("MAROON_FULL_CHARS", "24000"))
 
 dry_run = os.environ.get("MAROON_DRY_RUN", "0") == "1"
+skip_unchanged = os.environ.get("MAROON_SKIP_UNCHANGED", "1") == "1"
 
 include_path_re = os.environ.get("MAROON_INCLUDE_PATH_RE", "").strip()
 exclude_path_re = os.environ.get("MAROON_EXCLUDE_PATH_RE", "").strip()
@@ -340,6 +344,31 @@ def unified_diff(a_text: str, b_text: str) -> str:
 
 def main() -> int:
     files = list(iter_files())
+
+    # Priority ordering: maroon → patents → schemas → systems → business → truth → ontology → specs → other
+    def priority_key(path: str):
+        name = os.path.basename(path).lower()
+        rel = os.path.relpath(path, root_dir).lower()
+        def has(s): return s in name or s in rel
+        if has("maroon"):
+            return (0, rel)
+        if has("patent"):
+            return (1, rel)
+        if has("schema"):
+            return (2, rel)
+        if has("system"):
+            return (3, rel)
+        if has("business"):
+            return (4, rel)
+        if has("truth"):
+            return (5, rel)
+        if has("ontology"):
+            return (6, rel)
+        if has("spec"):
+            return (7, rel)
+        return (8, rel)
+
+    files.sort(key=priority_key)
     if dry_run:
         print("DRY RUN: matched files")
         for p in files:
@@ -351,6 +380,14 @@ def main() -> int:
         return 0
 
     os.makedirs(run_dir, exist_ok=True)
+
+    cache_path = os.path.join(output_root, ".file_cache.json")
+    cache = {}
+    if skip_unchanged and os.path.isfile(cache_path):
+        try:
+            cache = json.load(open(cache_path, "r", encoding="utf-8"))
+        except Exception:
+            cache = {}
 
     manifest = {
         "run_ts": run_ts,
@@ -364,6 +401,7 @@ def main() -> int:
         "full_chars": full_chars,
         "include_path_re": include_path_re or None,
         "exclude_path_re": exclude_path_re or None,
+        "skip_unchanged": skip_unchanged,
         "started_at": datetime.now().isoformat(timespec="seconds"),
         "files": [],
         "errors": [],
@@ -414,6 +452,14 @@ def main() -> int:
 
             # Always keep an input copy for forensics/repro.
             write_text(os.path.join(out_dir, "input.md"), content + ("\n" if not content.endswith("\n") else ""))
+
+            # Redundancy guard: skip unchanged files
+            if skip_unchanged:
+                cached = cache.get(entry["path"])
+                if cached == entry["input_sha256"]:
+                    entry["status"] = "skipped"
+                    manifest["files"].append(entry)
+                    continue
 
             rewrite_text = None
             analysis_text = None
@@ -468,6 +514,8 @@ def main() -> int:
                     write_text(os.path.join(out_dir, "diff.patch"), diff)
 
             entry["status"] = "ok"
+            if skip_unchanged:
+                cache[entry["path"]] = entry["input_sha256"]
 
         except Exception as e:
             entry["status"] = "error"
@@ -486,6 +534,13 @@ def main() -> int:
     # Human-friendly pointer to latest run.
     os.makedirs(output_root, exist_ok=True)
     write_text(os.path.join(output_root, "LATEST"), run_ts + "\n")
+
+    # Update cache
+    if skip_unchanged:
+        try:
+            write_text(cache_path, json.dumps(cache, indent=2) + "\n")
+        except Exception:
+            pass
 
     if manifest["errors"]:
         print(f"Completed with {len(manifest['errors'])} error(s). See {manifest_path}")
