@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "$SCRIPT_DIR/load_env.sh" ]]; then
+  source "$SCRIPT_DIR/load_env.sh"
+fi
+
 API_URL="${MAROON_INGEST_URL:-http://localhost:8000/ingest}"
 API_KEY="${MAROON_INGEST_API_KEY:-}"
 

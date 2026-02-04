@@ -1,0 +1,77 @@
+openapi: 3.1.0
+info:
+  title: Maroon Ingest Engine
+  version: 1.0.0
+servers:
+  - url: https://YOUR-TUNNEL-URL
+paths:
+  /ingest:
+    post:
+      operationId: ingest
+      summary: Ingest a thread into the Maroon corpus
+      security:
+        - apiKeyHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - thread_title
+                - source_system
+                - source_channel
+                - raw_content
+              properties:
+                thread_title:
+                  type: string
+                source_system:
+                  type: string
+                source_channel:
+                  type: string
+                raw_content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                possible_types:
+                  type: array
+                  items:
+                    type: string
+                confidence:
+                  type: string
+      responses:
+        "200":
+          description: Ingested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  file:
+                    type: string
+                  ingested_at:
+                    type: string
+  /health:
+    get:
+      operationId: health
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-Maroon-Key
