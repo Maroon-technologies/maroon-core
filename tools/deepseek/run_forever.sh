@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_RUNNER="$SCRIPT_DIR/Maroon-Core/tools/deepseek/run_workspace.sh"
 SYNC_HOOK="$SCRIPT_DIR/Maroon-Core/tools/deepseek/post_run_sync.sh"
 
-SLEEP_SECONDS="${MAROON_LOOP_SLEEP_SECONDS:-86400}"
+SLEEP_SECONDS="${MAROON_LOOP_SLEEP_SECONDS:-0}"
 LOG_FILE="${MAROON_LOOP_LOG:-$SCRIPT_DIR/deepseek_loop.log}"
 LOCK_FILE="${MAROON_LOOP_LOCK:-/tmp/deepseek_run_forever.lock}"
 
@@ -68,8 +68,12 @@ main() {
 
   while true; do
     run_once
-    echo "Sleeping for $SLEEP_SECONDS seconds" | tee -a "$LOG_FILE"
-    sleep "$SLEEP_SECONDS"
+    if [[ "$SLEEP_SECONDS" -gt 0 ]]; then
+      echo "Sleeping for $SLEEP_SECONDS seconds" | tee -a "$LOG_FILE"
+      sleep "$SLEEP_SECONDS"
+    else
+      echo "No sleep configured; restarting immediately" | tee -a "$LOG_FILE"
+    fi
   done
 }
 
