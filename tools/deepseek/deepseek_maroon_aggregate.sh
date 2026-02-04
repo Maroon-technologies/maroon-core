@@ -119,32 +119,58 @@ def parse_tagged(text: str, tag: str):
 
 
 entries = []
-for dirpath, dirnames, filenames in os.walk(run_dir):
-    if "analysis.md" in filenames or "actions.md" in filenames:
-        input_path = None
-        ip = os.path.join(dirpath, "input_path.txt")
-        if os.path.isfile(ip):
-            with open(ip, "r", encoding="utf-8", errors="ignore") as f:
-                input_path = f.read().strip()
-        analysis = None
-        actions = None
-        ap = os.path.join(dirpath, "analysis.md")
+
+# One entry per file directory. Prefer pass2 outputs if present.
+for name in sorted(os.listdir(run_dir)):
+    file_dir = os.path.join(run_dir, name)
+    if not os.path.isdir(file_dir):
+        continue
+    if name.startswith("_"):
+        continue
+
+    input_path = None
+    ip = os.path.join(file_dir, "input_path.txt")
+    if os.path.isfile(ip):
+        with open(ip, "r", encoding="utf-8", errors="ignore") as f:
+            input_path = f.read().strip()
+
+    chosen_pass = None
+    analysis = None
+    actions = None
+
+    candidates = [
+        ("pass2", os.path.join(file_dir, "pass2", "analysis.md"), os.path.join(file_dir, "pass2", "actions.md")),
+        ("pass1", os.path.join(file_dir, "analysis.md"), os.path.join(file_dir, "actions.md")),
+    ]
+
+    for pass_name, ap, acp in candidates:
+        a = None
+        c = None
         if os.path.isfile(ap):
             with open(ap, "r", encoding="utf-8", errors="ignore") as f:
-                analysis = f.read().strip()
-        acp = os.path.join(dirpath, "actions.md")
+                a = f.read().strip()
         if os.path.isfile(acp):
             with open(acp, "r", encoding="utf-8", errors="ignore") as f:
-                actions = f.read().strip()
-        if analysis or actions:
-            block = []
-            if input_path:
-                block.append(f"FILE: {input_path}")
-            if analysis:
-                block.append("ANALYSIS:\n" + analysis)
-            if actions:
-                block.append("ACTIONS:\n" + actions)
-            entries.append("\n".join(block))
+                c = f.read().strip()
+        if a or c:
+            chosen_pass = pass_name
+            analysis = a
+            actions = c
+            break
+
+    if not (analysis or actions):
+        continue
+
+    block = []
+    if input_path:
+        block.append(f"FILE: {input_path}")
+    if chosen_pass:
+        block.append(f"PASS: {chosen_pass}")
+    if analysis:
+        block.append("ANALYSIS:\n" + analysis)
+    if actions:
+        block.append("ACTIONS:\n" + actions)
+    entries.append("\n".join(block))
 
 if not entries:
     print("No analysis/actions files found in run.")
