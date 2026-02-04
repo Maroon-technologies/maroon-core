@@ -12,6 +12,7 @@ export MAROON_ROOT="$WORKSPACE_ROOT"
 export MAROON_OUTPUT_DIR="$WORKSPACE_ROOT/deepseek_outputs"
 export MAROON_RUNS_DIR="$CORE_ROOT/runs"
 export MAROON_REQUEST_QUEUE_DIR="${MAROON_REQUEST_QUEUE_DIR:-$CORE_ROOT/requests/pending}"
+export MAROON_INCLUDE_PATH_RE="${MAROON_INCLUDE_PATH_RE:-maroon_ingest/|maroon_ingest_raw/}"
 
 # Mark run in-progress for visibility.
 IN_PROGRESS="$MAROON_RUNS_DIR/IN_PROGRESS"
