@@ -36,6 +36,27 @@ def resolve_raw_dir(workspace_root: Path) -> Path:
     return (workspace_root / "maroon_ingest_raw").resolve()
 
 
+def load_deepseek_actions(workspace_root: Path) -> Dict[str, str]:
+    actions_map: Dict[str, Dict[str, str]] = {}
+    for folder in ["requests/pending", "requests/processed"]:
+        req_dir = workspace_root / "Maroon-Core" / folder
+        if not req_dir.exists():
+            continue
+        for path in req_dir.glob("*.json"):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                rel = data.get("source_relpath")
+                actions = (data.get("actions_text") or "").strip()
+                created = data.get("created_at") or ""
+                if rel and actions:
+                    existing = actions_map.get(rel)
+                    if not existing or created > existing["created_at"]:
+                        actions_map[rel] = {"actions": actions, "created_at": created}
+            except Exception:
+                continue
+    return {k: v["actions"] for k, v in actions_map.items()}
+
+
 def extract_thread(raw_text: str) -> str:
     if "<<<BEGIN THREAD>>>" in raw_text and "<<<END THREAD>>>" in raw_text:
         return raw_text.split("<<<BEGIN THREAD>>>", 1)[1].split("<<<END THREAD>>>", 1)[0].strip()
@@ -135,7 +156,7 @@ def extract_json_block(text: str) -> Dict[str, Any]:
         return {}
 
 
-def build_prompt(thread_text: str, original_title: str) -> str:
+def build_prompt(thread_text: str, original_title: str, deepseek_actions: str | None) -> str:
     return f"""
 You are a normalization engine. Output JSON only.
 
@@ -163,6 +184,9 @@ Return JSON with fields:
 
 Original thread title: {original_title}
 
+DeepSeek guidance (from raw analysis):
+{deepseek_actions or "none"}
+
 Thread content:
 """
 {thread_text}
@@ -183,6 +207,7 @@ def main() -> int:
         manifest = {}
 
     raw_files = sorted(raw_dir.rglob("*.maroon.md"))
+    deepseek_actions_map = load_deepseek_actions(workspace_root)
     index_path = clean_dir / "clean_index.json"
     if index_path.exists():
         index = json.loads(index_path.read_text(encoding="utf-8"))
@@ -205,8 +230,10 @@ def main() -> int:
         original_title = original_title or raw_path.stem
 
         thread_text = extract_thread(raw_text)
+        rel_raw = str(raw_path.relative_to(workspace_root)) if raw_path.is_absolute() else str(raw_path)
+        ds_actions = deepseek_actions_map.get(rel_raw)
 
-        prompt = build_prompt(thread_text, original_title)
+        prompt = build_prompt(thread_text, original_title, ds_actions)
         backend = os.environ.get("MAROON_CLEAN_BACKEND", "ollama").strip().lower()
         if backend == "openai":
             resp = call_openai(prompt)
@@ -341,6 +368,11 @@ def main() -> int:
         metadata.append(thread_text)
         metadata.append("<<<END THREAD>>>")
         metadata.append("")
+
+        if ds_actions:
+            metadata.append("# DeepSeek Guidance From Raw")
+            metadata.append(ds_actions)
+            metadata.append("")
 
         out_path.write_text("\n".join(metadata), encoding="utf-8")
 
