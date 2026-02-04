@@ -16,6 +16,7 @@ LOCK_FILE="${MAROON_LOOP_LOCK:-/tmp/deepseek_run_forever.lock}"
 
 SECOND_PASS="${MAROON_SECOND_PASS:-1}"
 GIT_AUTOCOMMIT="${MAROON_GIT_AUTOCOMMIT:-0}"
+GEMINI_DM="${MAROON_GEMINI_DM:-1}"
 
 if [[ ! -x "$CORE_RUNNER" ]]; then
   echo "Runner not found: $CORE_RUNNER" >&2
@@ -30,9 +31,11 @@ run_once() {
   if [[ "$SECOND_PASS" == "1" ]]; then
     MAROON_SECOND_PASS=1 \
     MAROON_GIT_AUTOCOMMIT="$GIT_AUTOCOMMIT" \
+    MAROON_GEMINI_DM="$GEMINI_DM" \
     "$CORE_RUNNER" >> "$LOG_FILE" 2>&1
   else
     MAROON_GIT_AUTOCOMMIT="$GIT_AUTOCOMMIT" \
+    MAROON_GEMINI_DM="$GEMINI_DM" \
     "$CORE_RUNNER" >> "$LOG_FILE" 2>&1
   fi
 
