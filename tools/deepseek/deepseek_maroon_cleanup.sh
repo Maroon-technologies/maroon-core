@@ -347,8 +347,30 @@ def unified_diff(a_text: str, b_text: str) -> str:
 def main() -> int:
     files = list(iter_files())
 
-    # Equal priority ordering (deterministic by path)
-    files.sort(key=lambda p: os.path.relpath(p, root_dir).lower())
+    # Priority ordering: maroon → patents → schemas → systems → business → truth → ontology → specs → other
+    def priority_key(path: str):
+        name = os.path.basename(path).lower()
+        rel = os.path.relpath(path, root_dir).lower()
+        def has(s): return s in name or s in rel
+        if has("maroon"):
+            return (0, rel)
+        if has("patent"):
+            return (1, rel)
+        if has("schema"):
+            return (2, rel)
+        if has("system"):
+            return (3, rel)
+        if has("business"):
+            return (4, rel)
+        if has("truth"):
+            return (5, rel)
+        if has("ontology"):
+            return (6, rel)
+        if has("spec"):
+            return (7, rel)
+        return (8, rel)
+
+    files.sort(key=priority_key)
     if dry_run:
         print("DRY RUN: matched files")
         for p in files:
