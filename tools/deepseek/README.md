@@ -20,6 +20,12 @@ ollama pull deepseek-r1:8b
 ./deepseek_maroon_cleanup.sh
 ```
 
+If you want to scan the entire workspace folder (parent of `Maroon-Core`) while keeping git-trackable summaries inside `Maroon-Core/runs`, run:
+
+```bash
+./run_workspace.sh
+```
+
 ## Outputs
 
 - Raw per-file outputs: `deepseek_outputs/<timestamp>/...`
@@ -51,4 +57,3 @@ MAROON_GLOBS='*maroon*.md,*patent*.md,*schema*.md' ./deepseek_maroon_cleanup.sh
 ```bash
 MAROON_NO_AGGREGATE=1 ./deepseek_maroon_cleanup.sh
 ```
-
