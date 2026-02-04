@@ -124,7 +124,7 @@ You are a normalization engine. Output JSON only.
 
 Goals:
 - Preserve verbatim content (do NOT rewrite the thread content)
-- Produce a Harvard-grade, professional normalization summary
+- Produce a Harvard-grade, professional normalization summary with plain-language clarity
 - Propose a canonical snake_case name
 - Classify content type and tags
 - Flag possible truth risks (Truth Teller flags)
@@ -162,6 +162,11 @@ def main() -> int:
         manifest = {}
 
     raw_files = sorted(raw_dir.rglob("*.maroon.md"))
+    index_path = clean_dir / "clean_index.json"
+    if index_path.exists():
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+    else:
+        index = {}
     processed = 0
 
     for raw_path in raw_files:
@@ -224,6 +229,9 @@ def main() -> int:
         metadata.append(f"  original_title: \"{original_title.replace('"', '\\"')}\"")
         metadata.append(f"  original_filename: \"{raw_path.name}\"")
         metadata.append(f"  canonical_name: {canonical_name}")
+        metadata.append("raw_reference:")
+        metadata.append(f"  path: \"{str(raw_path)}\"")
+        metadata.append(f"  sha256: {raw_hash}")
         metadata.append("content_classification:")
         if possible_types:
             metadata.append("  possible_types:")
@@ -287,6 +295,14 @@ def main() -> int:
         out_path.write_text("\n".join(metadata), encoding="utf-8")
 
         manifest[str(raw_path)] = raw_hash
+        index[str(raw_path)] = {
+            "clean_path": str(out_path),
+            "raw_sha256": raw_hash,
+            "canonical_name": canonical_name,
+            "clean_title": clean_title,
+            "types": possible_types,
+            "tags": tags,
+        }
         processed += 1
 
         log_path = clean_dir / "UPLOAD_LOG.md"
@@ -294,6 +310,7 @@ def main() -> int:
             f.write(f"- {datetime.now(timezone.utc).isoformat(timespec='seconds')}Z | cleaned {raw_path} -> {out_path}\n")
 
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    index_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
 
     print(f"Cleaned: {processed} files")
     print(f"Manifest: {manifest_path}")
