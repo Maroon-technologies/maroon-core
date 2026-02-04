@@ -26,6 +26,12 @@ If you want to scan the entire workspace folder (parent of `Maroon-Core`) while 
 ./run_workspace.sh
 ```
 
+If you want a second rewrite pass that uses the aggregated corpus context (\"learned\" pass), run:
+
+```bash
+MAROON_RUN_DIR=\"../deepseek_outputs/<timestamp>\" ./deepseek_maroon_pass2.sh
+```
+
 ## Outputs
 
 - Raw per-file outputs: `deepseek_outputs/<timestamp>/...`
