@@ -21,6 +21,7 @@ set -euo pipefail
 # - MAROON_GEMINI_DM (1 to generate a Gemini \"DM\" memo if Gemini CLI is available)
 # - MAROON_PATTERN_SCAN (1 to generate pattern_index.md/json each cycle)
 # - MAROON_CYCLE_LEDGER (1 to append a cycle ledger entry each cycle)
+# - MAROON_RUN_NOTES (1 to write a run_notes.md summary each cycle)
 #
 # For Microsoft 365, configure rclone with OneDrive or SharePoint remote:
 #   rclone config
@@ -39,6 +40,7 @@ GIT_PUSH="${MAROON_GIT_PUSH:-0}"
 GEMINI_DM="${MAROON_GEMINI_DM:-0}"
 PATTERN_SCAN="${MAROON_PATTERN_SCAN:-1}"
 CYCLE_LEDGER="${MAROON_CYCLE_LEDGER:-1}"
+RUN_NOTES="${MAROON_RUN_NOTES:-1}"
 
 if [[ -n "$SYNC_REMOTE" ]]; then
   if command -v rclone >/dev/null 2>&1; then
@@ -163,6 +165,40 @@ with open(snapshot, "w", encoding="utf-8") as f:
     f.write(f"- email_claimed_innovations: {pat.get('email_claimed_innovations')}\n")
     f.write(f"- filed_patents_user_reported: {pat.get('filed_patents_user_reported')}\n")
 PY
+    fi
+  fi
+fi
+
+# Per-run notes (summary + gaps + priorities) written into the run folder.
+if [[ "$RUN_NOTES" == "1" ]]; then
+  LATEST_FILE="$RUNS_DIR/LATEST"
+  if [[ -f "$LATEST_FILE" ]]; then
+    RUN_TS="$(cat "$LATEST_FILE" | tr -d '[:space:]')"
+    RUN_DIR="$RUNS_DIR/$RUN_TS"
+    SUMMARY="$RUN_DIR/corpus_summary.md"
+    GAPS="$RUN_DIR/corpus_gaps.md"
+    PRIORITIES="$RUN_DIR/corpus_priorities.md"
+    NOTES="$RUN_DIR/run_notes.md"
+    if [[ -f "$SUMMARY" ]]; then
+      {
+        echo "# Run Notes"
+        echo ""
+        echo "Run: $RUN_TS"
+        echo ""
+        echo "## Summary"
+        cat "$SUMMARY"
+        echo ""
+        if [[ -f "$GAPS" ]]; then
+          echo "## Gaps"
+          cat "$GAPS"
+          echo ""
+        fi
+        if [[ -f "$PRIORITIES" ]]; then
+          echo "## Priorities"
+          cat "$PRIORITIES"
+          echo ""
+        fi
+      } > "$NOTES"
     fi
   fi
 fi
