@@ -22,6 +22,7 @@ set -euo pipefail
 # - MAROON_PATTERN_SCAN (1 to generate pattern_index.md/json each cycle)
 # - MAROON_CYCLE_LEDGER (1 to append a cycle ledger entry each cycle)
 # - MAROON_RUN_NOTES (1 to write a run_notes.md summary each cycle)
+# - MAROON_NEXT_STEP_DIRECTIVE (override the default next-step directive text)
 #
 # For Microsoft 365, configure rclone with OneDrive or SharePoint remote:
 #   rclone config
@@ -41,6 +42,7 @@ GEMINI_DM="${MAROON_GEMINI_DM:-0}"
 PATTERN_SCAN="${MAROON_PATTERN_SCAN:-1}"
 CYCLE_LEDGER="${MAROON_CYCLE_LEDGER:-1}"
 RUN_NOTES="${MAROON_RUN_NOTES:-1}"
+NEXT_STEP_DIRECTIVE="${MAROON_NEXT_STEP_DIRECTIVE:-Prepare this corpus for the 40B offline model on the desktop. That model will be the official brain. Every cycle should harden, simplify, and upgrade incomplete docs to be ready for 40B takeover.}"
 
 if [[ -n "$SYNC_REMOTE" ]]; then
   if command -v rclone >/dev/null 2>&1; then
@@ -184,6 +186,9 @@ if [[ "$RUN_NOTES" == "1" ]]; then
         echo "# Run Notes"
         echo ""
         echo "Run: $RUN_TS"
+        echo ""
+        echo "## Next-Step Directive"
+        echo "$NEXT_STEP_DIRECTIVE"
         echo ""
         echo "## Summary"
         cat "$SUMMARY"
