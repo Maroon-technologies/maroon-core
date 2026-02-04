@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib import request
+import subprocess
 
 try:
     import yaml
@@ -64,7 +65,7 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def api_call(prompt: str) -> Dict[str, Any]:
+def call_openai(prompt: str) -> Dict[str, Any]:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -89,6 +90,22 @@ def api_call(prompt: str) -> Dict[str, Any]:
     with request.urlopen(req) as resp:  # nosec B310
         data = json.loads(resp.read().decode("utf-8"))
     return data
+
+
+def call_ollama(prompt: str) -> Dict[str, Any]:
+    model = os.environ.get("MAROON_CLEAN_MODEL", "qwen2.5:0.5b")
+    proc = subprocess.run(
+        ["ollama", "run", model],
+        input=prompt.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        err = proc.stderr.decode("utf-8", errors="ignore")
+        raise RuntimeError(f"ollama run failed: {err.strip()}")
+    text = proc.stdout.decode("utf-8", errors="ignore")
+    return {"output_text": text}
 
 
 def extract_text_from_response(resp: Dict[str, Any]) -> str:
@@ -128,6 +145,7 @@ Goals:
 - Propose a canonical snake_case name
 - Classify content type and tags
 - Flag possible truth risks (Truth Teller flags)
+- Leave explicit notes for a downstream DeepSeek agent
 
 Return JSON with fields:
 - clean_title
@@ -139,6 +157,9 @@ Return JSON with fields:
 - open_questions (array)
 - actions (array)
 - truth_teller_flags (array)
+- changes_made (array)
+- notes_for_deepseek (array)
+- recommendations_for_deepseek (array)
 
 Original thread title: {original_title}
 
@@ -186,7 +207,11 @@ def main() -> int:
         thread_text = extract_thread(raw_text)
 
         prompt = build_prompt(thread_text, original_title)
-        resp = api_call(prompt)
+        backend = os.environ.get("MAROON_CLEAN_BACKEND", "ollama").strip().lower()
+        if backend == "openai":
+            resp = call_openai(prompt)
+        else:
+            resp = call_ollama(prompt)
         resp_text = extract_text_from_response(resp)
         result = extract_json_block(resp_text)
 
@@ -199,6 +224,9 @@ def main() -> int:
         open_questions = result.get("open_questions", []) if isinstance(result.get("open_questions"), list) else []
         actions = result.get("actions", []) if isinstance(result.get("actions"), list) else []
         truth_flags = result.get("truth_teller_flags", []) if isinstance(result.get("truth_teller_flags"), list) else []
+        changes_made = result.get("changes_made", []) if isinstance(result.get("changes_made"), list) else []
+        notes_for_deepseek = result.get("notes_for_deepseek", []) if isinstance(result.get("notes_for_deepseek"), list) else []
+        recommendations_for_deepseek = result.get("recommendations_for_deepseek", []) if isinstance(result.get("recommendations_for_deepseek"), list) else []
 
         # derive date from raw file path or fallback to today
         try:
@@ -252,10 +280,18 @@ def main() -> int:
         metadata.append("instructions_to_downstream_ai:")
         metadata.append("  - use normalized sections for quick triage")
         metadata.append("  - preserve verbatim thread for source of truth")
+        metadata.append("  - review notes_for_deepseek and recommendations")
         metadata.append("---")
         metadata.append("")
         metadata.append("# Normalized Summary")
         metadata.append(summary or "")
+        metadata.append("")
+        metadata.append("# Changes Made")
+        if changes_made:
+            for c in changes_made:
+                metadata.append(f"- {c}")
+        else:
+            metadata.append("- none")
         metadata.append("")
         metadata.append("# Key Decisions")
         if decisions:
@@ -275,6 +311,20 @@ def main() -> int:
         if actions:
             for a in actions:
                 metadata.append(f"- {a}")
+        else:
+            metadata.append("- none")
+        metadata.append("")
+        metadata.append("# Notes for DeepSeek")
+        if notes_for_deepseek:
+            for n in notes_for_deepseek:
+                metadata.append(f"- {n}")
+        else:
+            metadata.append("- none")
+        metadata.append("")
+        metadata.append("# Recommendations for DeepSeek")
+        if recommendations_for_deepseek:
+            for r in recommendations_for_deepseek:
+                metadata.append(f"- {r}")
         else:
             metadata.append("- none")
         metadata.append("")
