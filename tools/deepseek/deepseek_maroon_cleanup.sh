@@ -102,6 +102,7 @@ root_dir = os.environ.get("MAROON_ROOT", os.getcwd())
 output_root = os.environ.get("MAROON_OUTPUT_DIR", os.path.join(root_dir, "deepseek_outputs"))
 run_ts = os.environ.get("MAROON_RUN_TS") or datetime.now().strftime("%Y%m%d-%H%M%S")
 run_dir = os.environ.get("MAROON_RUN_DIR") or os.path.join(output_root, run_ts)
+request_queue_dir = os.environ.get("MAROON_REQUEST_QUEUE_DIR", "").strip()
 
 globs_raw = os.environ.get("MAROON_GLOBS") or os.environ.get("MAROON_GLOB") or "*maroon*.md"
 glob_list = [g.strip().lower() for g in globs_raw.split(",") if g.strip()]
@@ -126,6 +127,9 @@ temperature = os.environ.get("DEEPSEEK_TEMPERATURE", "0")
 
 now = time.time()
 cutoff = now - (since_hours * 3600)
+
+if request_queue_dir:
+    os.makedirs(request_queue_dir, exist_ok=True)
 
 prune_dirs = {
     ".git",
@@ -238,6 +242,24 @@ def parse_tagged(text: str, tag: str):
     pattern = re.compile(rf"<{tag}>(.*?)</{tag}>", re.DOTALL | re.IGNORECASE)
     m = pattern.search(text)
     return m.group(1).strip() if m else None
+
+
+def enqueue_request(relpath: str, out_dir: str, actions_text: str, analysis_text: str | None):
+    if not request_queue_dir or not actions_text:
+        return
+    ts = datetime.now().isoformat(timespec="seconds")
+    digest = hashlib.sha1(f"{relpath}|{ts}".encode("utf-8")).hexdigest()[:10]
+    req_path = os.path.join(request_queue_dir, f"{run_ts}_{digest}.json")
+    payload = {
+        "created_at": ts,
+        "run_ts": run_ts,
+        "source_relpath": relpath,
+        "out_dir": out_dir,
+        "actions_text": actions_text,
+        "analysis_text": analysis_text or "",
+        "status": "pending",
+    }
+    write_text(req_path, json.dumps(payload, indent=2) + "\n")
 
 
 def write_text(path: str, content: str):
@@ -504,6 +526,7 @@ def main() -> int:
                 write_text(os.path.join(out_dir, "analysis.md"), analysis_text + "\n")
             if actions_text:
                 write_text(os.path.join(out_dir, "actions.md"), actions_text + "\n")
+                enqueue_request(rel, out_dir, actions_text, analysis_text)
 
             if rewrite_text:
                 # Always end with newline for stable diffs.

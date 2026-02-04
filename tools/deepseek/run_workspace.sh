@@ -11,6 +11,7 @@ WORKSPACE_ROOT="$(cd "$CORE_ROOT/.." && pwd)"
 export MAROON_ROOT="$WORKSPACE_ROOT"
 export MAROON_OUTPUT_DIR="$WORKSPACE_ROOT/deepseek_outputs"
 export MAROON_RUNS_DIR="$CORE_ROOT/runs"
+export MAROON_REQUEST_QUEUE_DIR="${MAROON_REQUEST_QUEUE_DIR:-$CORE_ROOT/requests/pending}"
 
 # Mark run in-progress for visibility.
 IN_PROGRESS="$MAROON_RUNS_DIR/IN_PROGRESS"
