@@ -50,6 +50,10 @@ agent_output.log
 *.bak
 .cache/
 
+# DeepSeek local outputs
+deepseek_outputs/
+deepseek_run.log
+
 # Sensitive
 .env
 *.key
