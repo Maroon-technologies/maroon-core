@@ -51,7 +51,7 @@ fi
 
 export MAROON_RUN_DIR="$RUN_DIR"
 
-python3 - <<'PY'
+python3 -u - <<'PY'
 import difflib
 import hashlib
 import json

@@ -37,7 +37,7 @@ else
   exit 1
 fi
 
-python3 - <<'PY'
+python3 -u - <<'PY'
 import os
 import re
 import sys
