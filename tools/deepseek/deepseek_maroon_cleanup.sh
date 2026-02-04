@@ -45,6 +45,10 @@ DRY_RUN="${MAROON_DRY_RUN:-0}"
 # If set to 1, skip aggregation.
 NO_AGGREGATE="${MAROON_NO_AGGREGATE:-0}"
 
+# If set to 1, run a second rewrite pass using the aggregated corpus context,
+# then re-aggregate (the aggregator prefers pass2 outputs when present).
+SECOND_PASS="${MAROON_SECOND_PASS:-0}"
+
 # If set to 1, copy small aggregated artifacts into ./runs/<timestamp>/ for git tracking.
 COPY_TO_RUNS="${MAROON_COPY_TO_RUNS:-1}"
 
@@ -493,6 +497,16 @@ PY
 if [[ "$NO_AGGREGATE" != "1" ]]; then
   if [[ -x "$SCRIPT_DIR/deepseek_maroon_aggregate.sh" ]]; then
     MAROON_RUN_DIR="$RUN_DIR" "$SCRIPT_DIR/deepseek_maroon_aggregate.sh" || true
+  fi
+
+  if [[ "$SECOND_PASS" == "1" ]]; then
+    if [[ -x "$SCRIPT_DIR/deepseek_maroon_pass2.sh" ]]; then
+      MAROON_RUN_DIR="$RUN_DIR" "$SCRIPT_DIR/deepseek_maroon_pass2.sh" || true
+      # Re-aggregate using pass2 outputs (if any were produced).
+      if [[ -x "$SCRIPT_DIR/deepseek_maroon_aggregate.sh" ]]; then
+        MAROON_RUN_DIR="$RUN_DIR" "$SCRIPT_DIR/deepseek_maroon_aggregate.sh" || true
+      fi
+    fi
   fi
 
   if [[ "$COPY_TO_RUNS" == "1" ]]; then
