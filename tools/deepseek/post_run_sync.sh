@@ -20,6 +20,8 @@ set -euo pipefail
 # - MAROON_AZURE_ACCOUNT (e.g., "yourstorageacct")
 # - MAROON_GEMINI_DM (1 to generate a Gemini \"DM\" memo if Gemini CLI is available)
 # - MAROON_PATTERN_SCAN (1 to generate pattern_index.md/json each cycle)
+# - MAROON_MAROON_INDEX (1 to generate maroon_index.md/json each cycle)
+# - MAROON_STATUS (1 to write a runs/STATUS.md snapshot each cycle)
 # - MAROON_CYCLE_LEDGER (1 to append a cycle ledger entry each cycle)
 # - MAROON_RUN_NOTES (1 to write a run_notes.md summary each cycle)
 # - MAROON_NEXT_STEP_DIRECTIVE (override the default next-step directive text)
@@ -40,6 +42,8 @@ SYNC_SUBDIR="${MAROON_SYNC_SUBDIR:-Maroon/runs}"
 GIT_PUSH="${MAROON_GIT_PUSH:-0}"
 GEMINI_DM="${MAROON_GEMINI_DM:-0}"
 PATTERN_SCAN="${MAROON_PATTERN_SCAN:-1}"
+MAROON_INDEX="${MAROON_MAROON_INDEX:-1}"
+STATUS_SNAPSHOT="${MAROON_STATUS:-1}"
 CYCLE_LEDGER="${MAROON_CYCLE_LEDGER:-1}"
 RUN_NOTES="${MAROON_RUN_NOTES:-1}"
 NEXT_STEP_DIRECTIVE="${MAROON_NEXT_STEP_DIRECTIVE:-Prepare this corpus for the 40B offline model on the desktop. That model will be the official brain. Every cycle should harden, simplify, and upgrade incomplete docs to be ready for 40B takeover.}"
@@ -115,6 +119,13 @@ fi
 if [[ "$PATTERN_SCAN" == "1" ]]; then
   if [[ -x "$SCRIPT_DIR/pattern_scan.sh" ]]; then
     CORE_ROOT="$CORE_ROOT" RUNS_DIR="$RUNS_DIR" "$SCRIPT_DIR/pattern_scan.sh" >/dev/null 2>&1 || true
+  fi
+fi
+
+# Maroon index snapshot (maroon*.md inventory + duplicate detection)
+if [[ "$MAROON_INDEX" == "1" ]]; then
+  if [[ -x "$SCRIPT_DIR/maroon_index.sh" ]]; then
+    CORE_ROOT="$CORE_ROOT" RUNS_DIR="$RUNS_DIR" WORKSPACE_ROOT="$CORE_ROOT/.." "$SCRIPT_DIR/maroon_index.sh" >/dev/null 2>&1 || true
   fi
 fi
 
@@ -258,5 +269,84 @@ if [[ "$RUN_NOTES" == "1" ]]; then
         fi
       } > "$NOTES"
     fi
+  fi
+fi
+
+# Status snapshot (single file for quick visibility).
+if [[ "$STATUS_SNAPSHOT" == "1" ]]; then
+  LATEST_FILE="$RUNS_DIR/LATEST"
+  if [[ -f "$LATEST_FILE" ]]; then
+    RUN_TS="$(cat "$LATEST_FILE" | tr -d '[:space:]')"
+    RUN_DIR="$RUNS_DIR/$RUN_TS"
+    STATUS="$RUNS_DIR/STATUS.md"
+    RUN_TS="$RUN_TS" RUN_DIR="$RUN_DIR" RUNS_DIR="$RUNS_DIR" STATUS="$STATUS" python3 - <<'PY'
+import json, os, datetime
+
+run_ts = os.environ.get("RUN_TS")
+run_dir = os.environ.get("RUN_DIR")
+runs_dir = os.environ.get("RUNS_DIR")
+status_path = os.environ.get("STATUS")
+
+manifest_path = os.path.join(run_dir, "run_manifest.json")
+pattern_path = os.path.join(run_dir, "pattern_index.json")
+maroon_path = os.path.join(run_dir, "maroon_index.json")
+
+total_files = done_files = error_files = 0
+progress_pct = 0.0
+if os.path.isfile(manifest_path):
+    manifest = json.load(open(manifest_path, "r", encoding="utf-8"))
+    files = manifest.get("files", [])
+    total_files = len(files)
+    for f in files:
+        status = f.get("status")
+        if status in ("ok", "skipped"):
+            done_files += 1
+        elif status == "error":
+            error_files += 1
+    if total_files:
+        progress_pct = round((done_files / total_files) * 100, 1)
+
+pat = {}
+counts = {}
+if os.path.isfile(pattern_path):
+    data = json.load(open(pattern_path, "r", encoding="utf-8"))
+    pat = data.get("patent_docs", {}) or {}
+    counts = data.get("counts", {}) or {}
+
+maroon_count = None
+dupe_count = None
+if os.path.isfile(maroon_path):
+    m = json.load(open(maroon_path, "r", encoding="utf-8"))
+    maroon_count = m.get("maroon_files_count")
+    dupe_count = len(m.get("duplicate_groups", {}) or {})
+
+lines = []
+lines.append("# Status")
+lines.append("")
+lines.append(f"- updated_at: {datetime.datetime.now().isoformat(timespec='seconds')}")
+lines.append(f"- last_run: {run_ts}")
+lines.append(f"- progress_pct: {progress_pct}%")
+lines.append(f"- total_files: {total_files}")
+lines.append(f"- done_files: {done_files}")
+lines.append(f"- error_files: {error_files}")
+if maroon_count is not None:
+    lines.append(f"- maroon_files_count: {maroon_count}")
+if dupe_count is not None:
+    lines.append(f"- maroon_duplicate_groups: {dupe_count}")
+if counts:
+    lines.append(f"- total_maroon_hits: {counts.get('maroon')}")
+if pat:
+    lines.append(f"- patent_draft_files: {pat.get('draft_files_count')}")
+    lines.append(f"- portfolio_opportunities: {pat.get('portfolio_opportunities')}")
+    lines.append(f"- filed_patents_user_reported: {pat.get('filed_patents_user_reported')}")
+lines.append(f"- run_dir: {run_dir}")
+lines.append(f"- run_notes: {os.path.join(run_dir, 'run_notes.md')}")
+lines.append(f"- maroon_index: {os.path.join(run_dir, 'maroon_index.md')}")
+lines.append(f"- cycle_snapshot: {os.path.join(run_dir, 'cycle_snapshot.md')}")
+
+os.makedirs(runs_dir, exist_ok=True)
+with open(status_path, "w", encoding="utf-8") as f:
+    f.write("\n".join(lines) + "\n")
+PY
   fi
 fi

@@ -12,6 +12,16 @@ export MAROON_ROOT="$WORKSPACE_ROOT"
 export MAROON_OUTPUT_DIR="$WORKSPACE_ROOT/deepseek_outputs"
 export MAROON_RUNS_DIR="$CORE_ROOT/runs"
 
+# Mark run in-progress for visibility.
+IN_PROGRESS="$MAROON_RUNS_DIR/IN_PROGRESS"
+mkdir -p "$MAROON_RUNS_DIR"
+{
+  echo "started_at=$(date '+%Y-%m-%d %H:%M:%S')"
+  echo "pid=$$"
+  echo "run_host=$(hostname)"
+} > "$IN_PROGRESS"
+trap 'rm -f "$IN_PROGRESS"' EXIT INT TERM
+
 # Ensure the scan is global (not accidentally restricted by a leftover MAROON_GLOB).
 unset MAROON_GLOB || true
 export MAROON_GLOBS="${MAROON_GLOBS:-*maroon*.md,*patent*.md,*schema*.md,*business*.md,*system*.md,*ontology*.md,*spec*.md,*truth*.md,*nanny*.md}"
