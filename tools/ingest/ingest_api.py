@@ -6,7 +6,7 @@ import os
 import re
 from typing import List
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field
 
 app = FastAPI(title="Maroon Ingest Engine")
@@ -56,7 +56,21 @@ def health():
 
 
 @app.post("/ingest")
-def ingest(payload: IngestPayload):
+def ingest(
+    payload: IngestPayload,
+    x_maroon_key: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
+):
+    api_key = os.environ.get("MAROON_INGEST_API_KEY", "").strip()
+    if api_key:
+        token = None
+        if x_maroon_key:
+            token = x_maroon_key.strip()
+        elif authorization and authorization.lower().startswith("bearer "):
+            token = authorization.split(" ", 1)[1].strip()
+        if token != api_key:
+            raise HTTPException(status_code=401, detail="invalid api key")
+
     if not payload.raw_content.strip():
         raise HTTPException(status_code=400, detail="raw_content is required")
 
