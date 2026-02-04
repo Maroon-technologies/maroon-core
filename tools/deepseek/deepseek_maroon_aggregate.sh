@@ -191,10 +191,11 @@ Task: Produce a global synthesis from corpus notes.
 Rules:
 - Do not invent facts.
 - Use Harvard-grade clarity for a non-specialist reader.
+- Audience: founder with a third-grade education. Use plain language, short sentences, define terms.
 - Make the synthesis global across industries.
 - Use a top-down, infrastructure-first framing (identity/governance -> data -> infra -> services -> apps).
 - Replace vendor-specific assumptions with provider-agnostic patterns; keep vendor-specific notes only as clearly labeled examples.
-- If information is missing/unknown, add explicit TODOs and questions (do not guess).
+- Assume the source is incomplete. If information is missing/unknown, add explicit TODOs and questions (do not guess).
 - Do not use nested bullet lists.
 Return ONLY the tagged sections below, no extra text.
 
@@ -226,10 +227,11 @@ You are an expert editor and systems architect.
 Summarize this corpus-notes chunk.
 Rules:
 - Do not invent facts.
+- Audience: founder with a third-grade education. Use plain language, short sentences, define terms.
 - Make guidance global across industries.
 - Use a top-down, infrastructure-first framing (identity/governance -> data -> infra -> services -> apps).
 - Replace vendor-specific assumptions with provider-agnostic patterns; keep vendor-specific notes only as clearly labeled examples.
-- If information is missing/unknown, add explicit TODOs and questions (do not guess).
+- Assume the source is incomplete. If information is missing/unknown, add explicit TODOs and questions (do not guess).
 - Do not use nested bullet lists.
 Return ONLY the tagged sections below, no extra text.
 

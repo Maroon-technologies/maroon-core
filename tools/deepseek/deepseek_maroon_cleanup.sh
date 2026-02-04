@@ -249,10 +249,12 @@ def write_text(path: str, content: str):
 STYLE = """
 Quality bar:
 - Harvard-grade clarity for a non-specialist reader.
+- Audience: founder with a third-grade education. Use plain language, short sentences, define terms.
 - Top-down, infrastructure-first structure (identity/governance -> data -> infra -> services -> apps).
 - Make guidance global across industries.
 - Replace vendor-specific instructions with provider-agnostic patterns; keep vendor-specific notes only as clearly labeled examples.
-- Do not invent facts. If something is missing/unknown, add explicit TODOs and questions.
+- Assume the source is incomplete. If something is missing/unknown, add explicit TODOs and questions.
+- Do not invent facts.
 - Keep originals intact; do not request destructive changes.
 - Do not use nested bullet lists.
 """.strip()
