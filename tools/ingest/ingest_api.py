@@ -20,6 +20,7 @@ class IngestPayload(BaseModel):
     tags: List[str] = Field(default_factory=list)
     possible_types: List[str] = Field(default_factory=list)
     confidence: str = "unknown"
+    stage: str | None = None
 
 
 def resolve_base_dir() -> Path:
@@ -31,6 +32,17 @@ def resolve_base_dir() -> Path:
     core_root = script_dir.parent.parent  # Maroon-Core
     workspace_root = core_root.parent
     return (workspace_root / "maroon_ingest").resolve()
+
+
+def resolve_raw_dir() -> Path:
+    env = os.environ.get("MAROON_INGEST_RAW_DIR")
+    if env:
+        return Path(env).expanduser().resolve()
+
+    script_dir = Path(__file__).resolve().parent
+    core_root = script_dir.parent.parent
+    workspace_root = core_root.parent
+    return (workspace_root / "maroon_ingest_raw").resolve()
 
 
 def sanitize(text: str) -> str:
@@ -60,6 +72,7 @@ def ingest(
     payload: IngestPayload,
     x_maroon_key: str | None = Header(default=None),
     authorization: str | None = Header(default=None),
+    x_maroon_stage: str | None = Header(default=None),
 ):
     api_key = os.environ.get("MAROON_INGEST_API_KEY", "").strip()
     if api_key:
@@ -80,7 +93,12 @@ def ingest(
     month = now.strftime("%m")
     date = now.strftime("%Y-%m-%d")
 
-    base_dir = resolve_base_dir()
+    stage_default = os.environ.get("MAROON_INGEST_STAGE_DEFAULT", "raw").strip().lower()
+    stage = (payload.stage or x_maroon_stage or stage_default or "raw").strip().lower()
+    if stage not in {"raw", "clean"}:
+        raise HTTPException(status_code=400, detail="stage must be 'raw' or 'clean'")
+
+    base_dir = resolve_raw_dir() if stage == "raw" else resolve_base_dir()
     folder = base_dir / year / month
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -101,6 +119,7 @@ def ingest(
     metadata.append("maroon_version: 1.0")
     metadata.append("phase: phase_0_discovery")
     metadata.append(f"ingested_at: {now_iso}")
+    metadata.append("ingest_stage: " + stage)
     metadata.append("source:")
     metadata.append(f"  system: {payload.source_system}")
     metadata.append(f"  channel: {payload.source_channel}")
