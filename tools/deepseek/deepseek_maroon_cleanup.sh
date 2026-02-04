@@ -73,6 +73,13 @@ else
   exit 1
 fi
 
+if [[ "$DRY_RUN" == "1" ]]; then
+  NO_AGGREGATE=1
+  SECOND_PASS=0
+  COPY_TO_RUNS=0
+  GIT_AUTOCOMMIT=0
+fi
+
 export MAROON_RUN_TS
 export MAROON_RUN_DIR="$RUN_DIR"
 
