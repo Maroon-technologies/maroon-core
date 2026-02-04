@@ -38,6 +38,18 @@ Or run pass2 explicitly on an existing run:
 MAROON_RUN_DIR=\"../deepseek_outputs/<timestamp>\" ./deepseek_maroon_pass2.sh
 ```
 
+If you want it to run continuously (24h loop) and stay awake, use:
+
+```bash
+./run_forever.sh
+```
+
+To sync results out to Microsoft 365 or Google Drive, configure rclone and set:
+
+```bash
+MAROON_SYNC_REMOTE=\"onedrive:\" MAROON_SYNC_SUBDIR=\"Maroon/runs\" ./post_run_sync.sh
+```
+
 ## Outputs
 
 - Raw per-file outputs: `deepseek_outputs/<timestamp>/...`
