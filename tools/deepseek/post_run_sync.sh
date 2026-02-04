@@ -19,6 +19,7 @@ set -euo pipefail
 # - MAROON_AZURE_CONTAINER (e.g., "maroon-runs")
 # - MAROON_AZURE_ACCOUNT (e.g., "yourstorageacct")
 # - MAROON_GEMINI_DM (1 to generate a Gemini \"DM\" memo if Gemini CLI is available)
+# - MAROON_PATTERN_SCAN (1 to generate pattern_index.md/json each cycle)
 #
 # For Microsoft 365, configure rclone with OneDrive or SharePoint remote:
 #   rclone config
@@ -35,6 +36,7 @@ SYNC_REMOTE="${MAROON_SYNC_REMOTE:-}"
 SYNC_SUBDIR="${MAROON_SYNC_SUBDIR:-Maroon/runs}"
 GIT_PUSH="${MAROON_GIT_PUSH:-0}"
 GEMINI_DM="${MAROON_GEMINI_DM:-0}"
+PATTERN_SCAN="${MAROON_PATTERN_SCAN:-1}"
 
 if [[ -n "$SYNC_REMOTE" ]]; then
   if command -v rclone >/dev/null 2>&1; then
@@ -100,5 +102,12 @@ if [[ "$GEMINI_DM" == "1" ]]; then
         echo "$PROMPT" | "$GEMINI_BIN" > "$DM_OUT" 2>/dev/null || true
       fi
     fi
+  fi
+fi
+
+# Pattern scan snapshot
+if [[ "$PATTERN_SCAN" == "1" ]]; then
+  if [[ -x "$SCRIPT_DIR/pattern_scan.sh" ]]; then
+    CORE_ROOT="$CORE_ROOT" RUNS_DIR="$RUNS_DIR" "$SCRIPT_DIR/pattern_scan.sh" >/dev/null 2>&1 || true
   fi
 fi
