@@ -40,6 +40,11 @@ Thumbs.db
 # Secrets
 .env
 
+# Credentials
+credentials/
+client_secret*.json
+*oauth*.json
+
 # Firebase
 .firebase/
 firebase-debug.log
