@@ -382,6 +382,19 @@ CREATE TABLE IF NOT EXISTS maroon_core.corpus_quality_snapshots (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS maroon_core.phase_readiness_gate (
+  generated_at TIMESTAMPTZ,
+  recommended_stage TEXT,
+  readiness_level TEXT,
+  metrics JSONB NOT NULL DEFAULT '{}'::jsonb,
+  hard_blockers JSONB NOT NULL DEFAULT '[]'::jsonb,
+  warnings JSONB NOT NULL DEFAULT '[]'::jsonb,
+  forensic_health_status TEXT,
+  run_id TEXT,
+  operator_directive TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS inventions_owner_idx
   ON maroon_core.inventions (owner, updated_at DESC);
 CREATE INDEX IF NOT EXISTS inventions_priority_idx
@@ -424,6 +437,8 @@ CREATE INDEX IF NOT EXISTS corpus_gap_severity_type_idx
   ON maroon_core.corpus_gap_register (severity, gap_type);
 CREATE INDEX IF NOT EXISTS corpus_quality_generated_idx
   ON maroon_core.corpus_quality_snapshots (generated_at DESC);
+CREATE INDEX IF NOT EXISTS phase_readiness_generated_idx
+  ON maroon_core.phase_readiness_gate (generated_at DESC);
 
 CREATE OR REPLACE VIEW maroon_core.corpus_quality_overview AS
 SELECT
@@ -466,6 +481,7 @@ SELECT
   (SELECT COUNT(*) FROM maroon_core.artifact_registry) AS artifacts_count,
   (SELECT COUNT(*) FROM maroon_core.counsel_ip_queue) AS counsel_queue_count,
   (SELECT COUNT(*) FROM maroon_core.asset_ownership_registry) AS ownership_registry_count,
+  (SELECT COUNT(*) FROM maroon_core.phase_readiness_gate) AS phase_gate_snapshot_count,
   (SELECT COUNT(*) FROM maroon_core.corpus_file_inventory) AS corpus_inventory_count,
   (SELECT COUNT(*) FROM maroon_core.corpus_gap_register) AS corpus_gap_count,
   (SELECT AVG(quality_score) FROM maroon_core.corpus_file_inventory) AS corpus_avg_quality_score,

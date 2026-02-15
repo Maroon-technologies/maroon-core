@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -50,11 +51,19 @@ def write_md(path: Path, lines: list[str]) -> None:
 
 def build_args() -> argparse.Namespace:
     gft_default = Path(__file__).resolve().parents[1]
+    default_project = (
+        os.environ.get("PROJECT_ID")
+        or os.environ.get("BQ_PROJECT_ID")
+        or os.environ.get("GOOGLE_CLOUD_PROJECT")
+        or os.environ.get("GCLOUD_PROJECT")
+        or "nanny-tech"
+    )
+    default_dataset = os.environ.get("DATASET") or os.environ.get("BQ_DATASET") or "maroon_ops"
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default="", help="Optional workspace root.")
     parser.add_argument("--gft-root", default=str(gft_default), help="Direct google_free_tier path.")
-    parser.add_argument("--project-id", default="nanny-tech")
-    parser.add_argument("--dataset", default="maroon_ops")
+    parser.add_argument("--project-id", default=default_project)
+    parser.add_argument("--dataset", default=default_dataset)
     return parser.parse_args()
 
 

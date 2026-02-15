@@ -46,6 +46,9 @@ CORPUS_GAP_CSV="$REPORTS_OPS_DIR/maroon_corpus_gap_register_latest.csv"
 CORPUS_SNAPSHOT_JSON="$REPORTS_OPS_DIR/maroon_corpus_quality_snapshot_latest.json"
 CORPUS_SNAPSHOT_NDJSON="$TMP_DIR/maroon_corpus_quality_snapshot.ndjson"
 CORPUS_SNAPSHOT_PG_CSV="$TMP_DIR/maroon_corpus_quality_snapshot_pg.csv"
+PHASE_GATE_JSON="$REPORTS_OPS_DIR/maroon_phase_readiness_gate_latest.json"
+PHASE_GATE_NDJSON="$TMP_DIR/maroon_phase_readiness_gate.ndjson"
+PHASE_GATE_PG_CSV="$TMP_DIR/maroon_phase_readiness_gate_pg.csv"
 
 require_file() {
   local file="$1"
@@ -170,6 +173,38 @@ with pg_csv.open("w", encoding="utf-8", newline="") as fh:
   writer = csv.DictWriter(fh, fieldnames=fieldnames)
   writer.writeheader()
   writer.writerow({k: payload.get(k, "") for k in fieldnames})
+PY
+}
+
+render_phase_gate_files() {
+  if [[ ! -f "$PHASE_GATE_JSON" ]]; then
+    return 0
+  fi
+  PHASE_GATE_JSON="$PHASE_GATE_JSON" \
+  PHASE_GATE_NDJSON="$PHASE_GATE_NDJSON" \
+  PHASE_GATE_PG_CSV="$PHASE_GATE_PG_CSV" python3 - <<'PY'
+import csv
+import json
+import os
+from pathlib import Path
+src = Path(os.environ["PHASE_GATE_JSON"])
+ndjson = Path(os.environ["PHASE_GATE_NDJSON"])
+pg_csv = Path(os.environ["PHASE_GATE_PG_CSV"])
+payload = json.loads(src.read_text(encoding='utf-8'))
+ndjson.write_text(json.dumps(payload, separators=(',', ':')) + '\n', encoding='utf-8')
+fieldnames = [
+  "generated_at","recommended_stage","readiness_level","metrics","hard_blockers",
+  "warnings","forensic_health_status","run_id","operator_directive"
+]
+row = {k: payload.get(k, "") for k in fieldnames}
+row["metrics"] = json.dumps(row["metrics"] if isinstance(row["metrics"], dict) else {}, separators=(",", ":"))
+row["hard_blockers"] = json.dumps(row["hard_blockers"] if isinstance(row["hard_blockers"], list) else [], separators=(",", ":"))
+row["warnings"] = json.dumps(row["warnings"] if isinstance(row["warnings"], list) else [], separators=(",", ":"))
+pg_csv.parent.mkdir(parents=True, exist_ok=True)
+with pg_csv.open("w", encoding="utf-8", newline="") as fh:
+  writer = csv.DictWriter(fh, fieldnames=fieldnames)
+  writer.writeheader()
+  writer.writerow(row)
 PY
 }
 
@@ -307,6 +342,15 @@ TRUNCATE TABLE maroon_core.corpus_quality_snapshots;
 SQL
   fi
 
+  if [[ -f "$PHASE_GATE_PG_CSV" ]]; then
+    psql "$POSTGRES_URL" -v ON_ERROR_STOP=1 <<SQL
+TRUNCATE TABLE maroon_core.phase_readiness_gate;
+\\copy maroon_core.phase_readiness_gate (
+  generated_at,recommended_stage,readiness_level,metrics,hard_blockers,warnings,forensic_health_status,run_id,operator_directive
+) FROM '$PHASE_GATE_PG_CSV' CSV HEADER;
+SQL
+  fi
+
   echo "PostgreSQL bootstrap completed."
 }
 
@@ -433,6 +477,12 @@ bootstrap_bigquery() {
       "$DATASET.maroon_corpus_quality_snapshots" "$CORPUS_SNAPSHOT_NDJSON"
   fi
 
+  if [[ -f "$PHASE_GATE_NDJSON" ]]; then
+    bq --project_id="$PROJECT_ID" --location="$BQ_LOCATION" load --replace \
+      --autodetect --source_format=NEWLINE_DELIMITED_JSON \
+      "$DATASET.maroon_phase_readiness_gate" "$PHASE_GATE_NDJSON"
+  fi
+
   echo "BigQuery bootstrap completed."
 }
 
@@ -440,6 +490,7 @@ run_contract_validation
 render_complete_picture_run_files
 render_forensic_snapshot_ndjson
 render_corpus_snapshot_ndjson
+render_phase_gate_files
 
 case "$TARGET" in
   postgres)

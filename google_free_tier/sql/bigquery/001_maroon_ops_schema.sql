@@ -448,6 +448,22 @@ PARTITION BY DATE(generated_at)
 CLUSTER BY run_id
 OPTIONS(description = 'Snapshot summary for corpus coverage, quality, and unresolved gaps');
 
+CREATE TABLE IF NOT EXISTS `__PROJECT_ID__.__DATASET__.maroon_phase_readiness_gate` (
+  generated_at TIMESTAMP,
+  recommended_stage STRING,
+  readiness_level STRING,
+  metrics JSON,
+  hard_blockers ARRAY<STRING>,
+  warnings ARRAY<STRING>,
+  forensic_health_status STRING,
+  run_id STRING,
+  operator_directive STRING,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(created_at)
+CLUSTER BY readiness_level, recommended_stage
+OPTIONS(description = 'Deterministic stage gate output for cleaning vs synthesis progression');
+
 CREATE OR REPLACE VIEW `__PROJECT_ID__.__DATASET__.maroon_corpus_quality_overview` AS
 SELECT
   snapshot.run_id,
@@ -490,6 +506,7 @@ SELECT
   (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_asset_ownership_registry`) AS ownership_registry_count,
   (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_redteam_gap_register`) AS redteam_gap_count,
   (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_db_embedding_forensic_inspection`) AS forensic_snapshot_count,
+  (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_phase_readiness_gate`) AS phase_gate_snapshot_count,
   (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_corpus_file_inventory`) AS corpus_inventory_count,
   (SELECT COUNT(*) FROM `__PROJECT_ID__.__DATASET__.maroon_corpus_gap_register`) AS corpus_gap_count,
   (

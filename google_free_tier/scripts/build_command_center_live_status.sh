@@ -5,8 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GFT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUT_DIR="$GFT_ROOT/workspace/Maroon/Reports/Ops"
 OUT_FILE="$OUT_DIR/maroon_command_center_live_status.md"
+PROJECT_ID="${PROJECT_ID:-${BQ_PROJECT_ID:-$(gcloud config get-value project 2>/dev/null || true)}}"
 PROJECT_ID="${PROJECT_ID:-nanny-tech}"
-DATASET="${DATASET:-maroon_ops}"
+DATASET="${DATASET:-${BQ_DATASET:-maroon_ops}}"
+BQ_LOCATION="${BQ_LOCATION:-US}"
+BQ_QUERY_TIMEOUT_SECONDS="${BQ_QUERY_TIMEOUT_SECONDS:-45}"
 
 mkdir -p "$OUT_DIR"
 
@@ -14,7 +17,12 @@ now_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 run_query_json() {
   local sql="$1"
-  bq --project_id="$PROJECT_ID" query --use_legacy_sql=false --format=json "$sql" 2>/dev/null || echo "[]"
+  local output=""
+  if output="$(timeout "$BQ_QUERY_TIMEOUT_SECONDS" bq --project_id="$PROJECT_ID" --location="$BQ_LOCATION" query --use_legacy_sql=false --format=json "$sql" 2>/dev/null)"; then
+    printf '%s\n' "$output"
+  else
+    echo "[]"
+  fi
 }
 
 overview_json="$(run_query_json "SELECT * FROM \`$PROJECT_ID.$DATASET.executive_data_plane_overview\`")"
@@ -29,11 +37,14 @@ forensic_json="$(run_query_json "SELECT generated_at, health_status, ARRAY_LENGT
 ownership_json="$(run_query_json "SELECT COUNT(*) AS ownership_rows, COUNT(DISTINCT owner) AS owners_distinct FROM \`$PROJECT_ID.$DATASET.maroon_asset_ownership_registry\`")"
 corpus_quality_json="$(run_query_json "SELECT run_id, generated_at, docs_total, text_docs_total, core_docs_total, core_text_docs_total, priority_docs_total, priority_text_docs_total, line_coverage_pct, core_line_coverage_pct, priority_line_coverage_pct, avg_quality_score, core_avg_quality_score, open_gaps_total, critical_missing_total FROM \`$PROJECT_ID.$DATASET.maroon_corpus_quality_overview\`")"
 corpus_gaps_json="$(run_query_json "SELECT COUNT(*) AS gap_rows, COALESCE(SUM(CASE WHEN severity = 'P0' THEN 1 ELSE 0 END), 0) AS p0_gaps, COALESCE(SUM(CASE WHEN severity = 'P1' THEN 1 ELSE 0 END), 0) AS p1_gaps FROM \`$PROJECT_ID.$DATASET.maroon_corpus_gap_register\`")"
+phase_gate_json="$(run_query_json "SELECT generated_at, readiness_level, recommended_stage, operator_directive, hard_blockers, warnings FROM \`$PROJECT_ID.$DATASET.maroon_phase_readiness_gate\` ORDER BY generated_at DESC LIMIT 1")"
 
 {
   echo "# MAROON Command Center Live Status"
   echo
   echo "Generated: $now_utc"
+  echo
+  echo "BigQuery target: \`$PROJECT_ID.$DATASET\` (location: \`$BQ_LOCATION\`)"
   echo
   echo "## BigQuery Overview"
   echo
@@ -105,6 +116,12 @@ corpus_gaps_json="$(run_query_json "SELECT COUNT(*) AS gap_rows, COALESCE(SUM(CA
   echo
   echo '```json'
   echo "$corpus_gaps_json"
+  echo '```'
+  echo
+  echo "## Phase Readiness Gate"
+  echo
+  echo '```json'
+  echo "$phase_gate_json"
   echo '```'
 } > "$OUT_FILE"
 
